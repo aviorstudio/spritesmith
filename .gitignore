@@ -1,0 +1,7 @@
+/dist/
+/.artifacts/
+*.png
+*.svg
+.env
+
+spritesmith-alpha.png
