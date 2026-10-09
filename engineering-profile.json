@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "profile": "go-cli",
+  "commands": {
+    "install": [
+      "make",
+      "install"
+    ],
+    "lint": [
+      "make",
+      "lint"
+    ],
+    "test": [
+      "make",
+      "test"
+    ],
+    "build": [
+      "make",
+      "build"
+    ],
+    "check": [
+      "make",
+      "check"
+    ],
+    "clean": [
+      "make",
+      "clean"
+    ],
+    "dev": [
+      "make",
+      "dev"
+    ],
+    "stop": {
+      "unsupported": "The CLI owns no background service."
+    }
+  },
+  "max_job_minutes": 30
+}
