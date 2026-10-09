@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -144,12 +145,14 @@ func (c Client) Process(req Request) (Response, error) {
 		return Response{}, err
 	}
 
-	httpReq, err := http.NewRequest(http.MethodPost, strings.TrimRight(c.BaseURL, "/")+endpoint, &body)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(c.BaseURL, "/")+endpoint, &body)
 	if err != nil {
 		return Response{}, err
 	}
 	httpReq.Header.Set("Content-Type", writer.FormDataContentType())
-	httpReq.Header.Set("Accept", "image/png, application/json")
+	httpReq.Header.Set("Accept", "image/png, image/svg+xml, application/json")
 	operation := req.OperationID
 	if operation == "" {
 		value := make([]byte, 16)
@@ -175,7 +178,7 @@ func (c Client) Process(req Request) (Response, error) {
 	}
 	if resp.StatusCode == http.StatusAccepted {
 		initial := resp
-		resp, err = c.awaitGeneration(httpClient, initial, req.Format)
+		resp, err = c.awaitGeneration(ctx, httpClient, initial, req.Format)
 		initial.Body.Close()
 		if err != nil {
 			return Response{}, err
@@ -218,7 +221,7 @@ func (c Client) Process(req Request) (Response, error) {
 	return Response{OutputPath: outputPath, ContentType: contentType}, nil
 }
 
-func (c Client) awaitGeneration(client *http.Client, initial *http.Response, format string) (*http.Response, error) {
+func (c Client) awaitGeneration(ctx context.Context, client *http.Client, initial *http.Response, format string) (*http.Response, error) {
 	var job struct {
 		ID string `json:"id"`
 	}
@@ -227,7 +230,7 @@ func (c Client) awaitGeneration(client *http.Client, initial *http.Response, for
 	}
 	endpoint := strings.TrimRight(c.BaseURL, "/") + "/v1/generations/" + job.ID
 	for {
-		request, err := http.NewRequest(http.MethodGet, endpoint, nil)
+		request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -252,7 +255,7 @@ func (c Client) awaitGeneration(client *http.Client, initial *http.Response, for
 		}
 		switch state.Status {
 		case "succeeded":
-			request, err := http.NewRequest(http.MethodGet, endpoint+"/result?format="+format, nil)
+			request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/result?format="+format, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -265,7 +268,13 @@ func (c Client) awaitGeneration(client *http.Client, initial *http.Response, for
 		case "failed":
 			return nil, fmt.Errorf("generation %s failed", job.ID)
 		case "receiving", "queued", "claimed", "submitting", "processing":
-			time.Sleep(500 * time.Millisecond)
+			timer := time.NewTimer(500 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return nil, fmt.Errorf("generation %s remains recoverable: %w", job.ID, ctx.Err())
+			case <-timer.C:
+			}
 		default:
 			return nil, errors.New("API returned an unknown generation state")
 		}
