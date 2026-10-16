@@ -39,8 +39,6 @@ func run(args []string) int {
 	case "--version", "version":
 		fmt.Fprintf(os.Stdout, "spritesmith %s (%s)\n", version, revision)
 		return 0
-	case "image":
-		return runImage(args[1:])
 	case "prompt":
 		return runPrompt(args[1:])
 	case "-h", "--help", "help":
@@ -53,14 +51,6 @@ func run(args []string) int {
 	}
 }
 
-func runImage(args []string) int {
-	apiBase, req, ok := parseImage(args)
-	if !ok {
-		return 2
-	}
-	return submit(apiBase, req)
-}
-
 func runPrompt(args []string) int {
 	apiBase, req, ok := parsePrompt(args)
 	if !ok {
@@ -69,30 +59,11 @@ func runPrompt(args []string) int {
 	return submit(apiBase, req)
 }
 
-// parseImage and parsePrompt are separate from the submit they feed so that
+// Parsing is separate from submission so that
 // something can test the seam between a flag and the request it builds.
 // Folded into run* they were untestable, and losing a line there is invisible:
 // dropping OutputPath makes --out do nothing, and the CLI still prints a path
 // and still writes a PNG, just never the one that was asked for.
-func parseImage(args []string) (apiBase string, req client.Request, ok bool) {
-	fs, flags := newCommandFlags("image")
-	if err := fs.Parse(args); err != nil {
-		return "", client.Request{}, false
-	}
-	if fs.NArg() != 1 {
-		fmt.Fprintln(os.Stderr, "usage: spritesmith image [flags] IMAGE")
-		return "", client.Request{}, false
-	}
-
-	return *flags.apiBase, client.Request{
-		OperationID: *flags.operationID,
-		Mode:        client.ModeImage,
-		SourcePath:  fs.Arg(0),
-		OutputPath:  outputPath(flags),
-		Kind:        *flags.kind, Format: *flags.format,
-	}, true
-}
-
 func parsePrompt(args []string) (apiBase string, req client.Request, ok bool) {
 	fs, flags := newCommandFlags("prompt")
 	terminated := promptFlagsTerminated(args, fs)
@@ -177,7 +148,7 @@ func newCommandFlags(name string) (*flag.FlagSet, commonFlags) {
 		operationID: fs.String("operation-id", "", "reuse the same logical generation after an interrupted submission"),
 		apiBase:     fs.String("api", envDefault("SPRITESMITH_API_BASE", defaultAPIBase), "spritesmith API base URL"),
 		out:         fs.String("out", "", "output filename"),
-		kind:        fs.String("kind", "raster", "raster or vector"),
+		kind:        fs.String("kind", "vector", "vector sprites"),
 		format:      fs.String("format", "png", "png or svg (vector only)"),
 	}
 	return fs, flags
@@ -240,12 +211,12 @@ func printUsage(out io.Writer) {
 	fmt.Fprintln(out, "usage: spritesmith COMMAND [flags]")
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "Commands:")
-	fmt.Fprintln(out, "  image IMAGE                 make a sprite from a reference image through the API")
+	fmt.Fprintln(out, "  Use the web app to attach visual references to prompts.")
 	fmt.Fprintln(out, "  prompt PROMPT               make a sprite from a text prompt through the API")
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "Flags:")
-	fmt.Fprintln(out, "  --kind raster|vector        creation method, default raster")
-	fmt.Fprintln(out, "  --format png|svg            download format, default png; SVG requires vector")
+	fmt.Fprintln(out, "  --kind vector               SVG animation creation (default)")
+	fmt.Fprintln(out, "  --format png|svg            download format, default png")
 	fmt.Fprintln(out, "  --operation-id ID           retain this ID for safe retries")
 	fmt.Fprintln(out, "  --api URL                   API base URL, default http://127.0.0.1:8080")
 	fmt.Fprintf(out, "  --out FILE                  where to write the sprite, default %s\n", client.DefaultOutputPath)
