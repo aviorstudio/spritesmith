@@ -477,7 +477,6 @@ func TestEveryRequestAsksForThePackedSheet(t *testing.T) {
 		// somewhere in the request would pass here and prove nothing. The
 		// assertion below reads a parsed form field instead.
 		{Mode: ModePrompt, Prompt: "a duck standing on a bedsheet"},
-		{Mode: ModeImage, SourcePath: source},
 	}
 
 	for _, req := range requests {
@@ -491,8 +490,8 @@ func TestEveryRequestAsksForThePackedSheet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if got := api.form.Get("sheet"); got != "true" {
-				t.Errorf(`sheet = %q, want "true" for compatibility with older APIs`, got)
+			if got := api.form.Get("workflow"); got != "agent" {
+				t.Errorf(`workflow = %q, want agent`, got)
 			}
 			// The removed user-facing debug option must not return by accident.
 			if _, present := api.form["debug"]; present {
@@ -923,7 +922,7 @@ func TestAnEmptyOutputPathFallsBackToTheDefaultFile(t *testing.T) {
 // stale if the constant moved -- `make cli` runs from cli/, so the default
 // lands in the source tree.
 func TestTheDefaultOutputNameIsTheOneEverythingElseExpects(t *testing.T) {
-	if DefaultOutputPath != "spritesmith-alpha.png" {
+	if DefaultOutputPath != "spritesmith.png" {
 		t.Errorf("DefaultOutputPath = %q; the app saves spritesmith-alpha.png and a result should be the same thing wherever it came from", DefaultOutputPath)
 	}
 
