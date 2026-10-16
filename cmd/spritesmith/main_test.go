@@ -310,3 +310,16 @@ func TestHelpSaysAnExistingFileIsNotOverwritten(t *testing.T) {
 		t.Errorf("--help does not say what happens when the output path is taken:\n%s", out.String())
 	}
 }
+
+func TestPromptModelChoice(t *testing.T) {
+	for _, model := range []string{"haiku", "opus"} {
+		_, req, ok := parsePrompt([]string{"--model", model, "a tiny slime"})
+		if !ok || req.Model != model {
+			t.Fatalf("model selection lost: %+v", req)
+		}
+	}
+	_, req, ok := parsePrompt([]string{"a tiny slime"})
+	if !ok || req.Model != "haiku" {
+		t.Fatal("default must be haiku")
+	}
+}
