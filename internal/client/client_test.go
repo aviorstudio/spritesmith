@@ -923,7 +923,7 @@ func TestAnEmptyOutputPathFallsBackToTheDefaultFile(t *testing.T) {
 // lands in the source tree.
 func TestTheDefaultOutputNameIsTheOneEverythingElseExpects(t *testing.T) {
 	if DefaultOutputPath != "spritesmith.png" {
-		t.Errorf("DefaultOutputPath = %q; the app saves spritesmith-alpha.png and a result should be the same thing wherever it came from", DefaultOutputPath)
+		t.Errorf("DefaultOutputPath = %q; expected the documented default PNG name", DefaultOutputPath)
 	}
 
 	ignore, err := os.ReadFile(filepath.Join("..", "..", ".gitignore"))
