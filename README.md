@@ -26,6 +26,8 @@ spritesmith prompt --kind vector --format svg --operation-id emblem-v1 --out emb
 spritesmith prompt --kind vector --format png --out emblem.png 'A golden shield emblem'
 ```
 
+Use `--model haiku` (the default) or `--model opus` to choose the reasoning model. The API freezes this choice with the request, including retries. Both use medium reasoning effort.
+
 Flags come before the prompt. Use the web app to attach reference images, work with several sprites in a session, and publish revisions.
 
 The service creates and reviews vector animations through its agent workflow. This client downloads the default pose as SVG or PNG; the web app also exports animation sheets and frames.
