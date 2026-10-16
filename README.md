@@ -1,6 +1,6 @@
 # Spritesmith
 
-Command-line client for the Spritesmith API. Create raster or vector sprites and download finished PNG or SVG files.
+Command-line client for the Spritesmith API. Create animated vector sprites and download finished PNG or SVG files.
 
 The client requires an API service and an account token. It does not contain a local renderer or generation engine.
 
@@ -24,16 +24,15 @@ Hosted tokens require HTTPS. Loopback HTTP is supported for local development.
 spritesmith prompt --operation-id hero-v1 --out hero.png 'A small forest ranger'
 spritesmith prompt --kind vector --format svg --operation-id emblem-v1 --out emblem.svg 'A golden shield emblem'
 spritesmith prompt --kind vector --format png --out emblem.png 'A golden shield emblem'
-spritesmith image --out ranger.png reference.png
 ```
 
-Flags come before the prompt or image filename. Vector creation requires a prompt; an image may be supplied as a reference.
+Flags come before the prompt. Use the web app to attach reference images, work with several sprites in a session, and publish revisions.
 
-Raster sprites export as PNG. Vector sprites export as SVG or PNG. SVG contains editable artwork geometry.
+The service creates and reviews vector animations through its agent workflow. This client downloads the default pose as SVG or PNG; the web app also exports animation sheets and frames.
 
 Generation runs as a server job. The client waits for completion and downloads the requested file. Retain `--operation-id` and reuse it with the same input after an interruption. Existing output files are never overwritten. An uncertain job requires reconciliation; the client does not automatically submit another paid request.
 
-The default API is `http://127.0.0.1:8080`; configure your hosted service explicitly. Default output is `spritesmith-alpha.png`, or `spritesmith.svg` for SVG downloads.
+The default API is `http://127.0.0.1:8080`; configure your hosted service explicitly. Default output is `spritesmith.png`, or `spritesmith.svg` for SVG downloads.
 
 ## Development
 
