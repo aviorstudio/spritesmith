@@ -32,7 +32,6 @@ var ErrUnauthorized = errors.New("the API rejected this request as unauthenticat
 type Mode string
 
 const (
-	ModeImage  Mode = "image"
 	ModePrompt Mode = "prompt"
 )
 
@@ -40,7 +39,7 @@ const (
 // file rather than a directory, because there is exactly one of them, and the
 // same name the app saves so a spritesmith result is the same thing wherever it
 // came from.
-const DefaultOutputPath = "spritesmith-alpha.png"
+const DefaultOutputPath = "spritesmith.png"
 
 type Request struct {
 	Kind        string
@@ -48,7 +47,6 @@ type Request struct {
 	OperationID string
 	Mode        Mode
 	Prompt      string
-	SourcePath  string
 	OutputPath  string
 }
 
@@ -69,13 +67,13 @@ type Client struct {
 
 func (c Client) Process(req Request) (Response, error) {
 	if req.Kind == "" {
-		req.Kind = "raster"
+		req.Kind = "vector"
 	}
 	if req.Format == "" {
 		req.Format = "png"
 	}
-	if (req.Kind != "raster" && req.Kind != "vector") || (req.Format != "png" && req.Format != "svg") || (req.Kind == "raster" && req.Format == "svg") {
-		return Response{}, errors.New("choose raster/png, vector/png, or vector/svg")
+	if req.Kind != "vector" || (req.Format != "png" && req.Format != "svg") {
+		return Response{}, errors.New("choose vector/png or vector/svg")
 	}
 	if c.BaseURL == "" {
 		c.BaseURL = "http://127.0.0.1:8080"
@@ -98,8 +96,8 @@ func (c Client) Process(req Request) (Response, error) {
 	if strings.TrimSpace(outputPath) == "" {
 		outputPath = DefaultOutputPath
 	}
-	// Checked before the request rather than after it. A generation costs an
-	// OpenAI call and a minute of somebody's attention; discovering the
+	// Checked before the request rather than after it. A generation costs a
+	// model call and a minute of somebody's attention; discovering the
 	// collision on the way to disk means paying for a result that is then
 	// thrown away. The write itself re-checks atomically -- see writeOutput.
 	if err := checkOutputPathFree(outputPath); err != nil {
@@ -118,18 +116,15 @@ func (c Client) Process(req Request) (Response, error) {
 	if err := writer.WriteField("kind", req.Kind); err != nil {
 		return Response{}, err
 	}
-	// Keep compatibility with older API deployments. Current APIs ignore this
-	// field and always serve the packed transparent PNG.
-	if err := writer.WriteField("sheet", "true"); err != nil {
+	if err := writer.WriteField("workflow", "agent"); err != nil {
+		return Response{}, err
+	}
+	if err := writer.WriteField("subject", "character"); err != nil {
 		return Response{}, err
 	}
 
-	endpoint := "/v1/image"
+	endpoint := "/v1/prompt"
 	switch req.Mode {
-	case ModeImage:
-		if err := addFile(writer, "image", req.SourcePath); err != nil {
-			return Response{}, err
-		}
 	case ModePrompt:
 		endpoint = "/v1/prompt"
 		if strings.TrimSpace(req.Prompt) == "" {

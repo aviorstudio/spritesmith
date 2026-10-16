@@ -116,7 +116,7 @@ func TestHelpUsesARecipeThatWorksOnAFreshMachine(t *testing.T) {
 func TestTheOutputFormatFlagsNoLongerExist(t *testing.T) {
 	for _, gone := range []string{"-sheet", "-debug"} {
 		t.Run(gone, func(t *testing.T) {
-			fs, _ := newCommandFlags("image")
+			fs, _ := newCommandFlags("prompt")
 			fs.SetOutput(io.Discard)
 			if err := fs.Parse([]string{gone, "source.png"}); err == nil {
 				t.Errorf("%s still parses, so it is still part of the interface", gone)
@@ -129,7 +129,7 @@ func TestTheOutputFormatFlagsNoLongerExist(t *testing.T) {
 // to be a file for that to be true of the path somebody gets with no flags at
 // all -- which is the path almost everybody gets.
 func TestOutDefaultsToASinglePNGFileInTheCurrentDirectory(t *testing.T) {
-	fs, flags := newCommandFlags("image")
+	fs, flags := newCommandFlags("prompt")
 	if err := fs.Parse(nil); err != nil {
 		t.Fatal(err)
 	}
@@ -148,25 +148,7 @@ func TestOutDefaultsToASinglePNGFileInTheCurrentDirectory(t *testing.T) {
 // dropping OutputPath from either struct literal used to leave both halves
 // green while --out silently did nothing -- the CLI would still print a path
 // and still write a PNG, just never the one that was asked for.
-func TestTheFlagsReachTheRequestForBothCommands(t *testing.T) {
-	t.Run("image", func(t *testing.T) {
-		apiBase, req, ok := parseImage([]string{"--api", "https://api.example.com", "--out", "build/sprite.png", "source.png"})
-		if !ok {
-			t.Fatal("parsing a valid image command failed")
-		}
-		if apiBase != "https://api.example.com" {
-			t.Errorf("apiBase = %q, want the --api that was given", apiBase)
-		}
-		if req.Mode != client.ModeImage {
-			t.Errorf("Mode = %q, want %q", req.Mode, client.ModeImage)
-		}
-		if req.SourcePath != "source.png" {
-			t.Errorf("SourcePath = %q, want the positional argument", req.SourcePath)
-		}
-		if req.OutputPath != "build/sprite.png" {
-			t.Errorf("OutputPath = %q, want the --out that was given; --out is being ignored", req.OutputPath)
-		}
-	})
+func TestTheFlagsReachThePromptRequest(t *testing.T) {
 
 	t.Run("prompt", func(t *testing.T) {
 		apiBase, req, ok := parsePrompt([]string{"--api", "https://api.example.com", "--out", "build/sprite.png", "a", "duck"})
@@ -203,12 +185,6 @@ func TestWithNoOutFlagTheRequestCarriesTheDefaultFile(t *testing.T) {
 // Both commands still reject the argument shapes they cannot act on, and do it
 // without building a request.
 func TestACommandWithTheWrongArgumentsIsRejected(t *testing.T) {
-	if _, _, ok := parseImage(nil); ok {
-		t.Error("image with no file was accepted")
-	}
-	if _, _, ok := parseImage([]string{"one.png", "two.png"}); ok {
-		t.Error("image with two files was accepted")
-	}
 	for _, args := range [][]string{nil, {"--out", "x.png"}, {"--out=x.png"}, {"   "}} {
 		message := captureStderr(t, func() {
 			if _, _, ok := parsePrompt(args); ok {
@@ -264,14 +240,6 @@ func TestTheFlagTerminatorStillAllowsAPromptBeginningWithADash(t *testing.T) {
 	}
 	if req.Prompt != "-a duck" {
 		t.Errorf("Prompt = %q, want %q", req.Prompt, "-a duck")
-	}
-}
-
-// image is the control: unlike prompt it accepts exactly one positional
-// argument, so the same misplaced flag shape was already rejected.
-func TestImageStillRejectsAFlagAfterItsArgument(t *testing.T) {
-	if _, _, ok := parseImage([]string{"source.png", "--out", "x.png"}); ok {
-		t.Error("image accepted a flag after its positional argument")
 	}
 }
 
