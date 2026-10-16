@@ -18,6 +18,7 @@ var revision = "unknown"
 const defaultAPIBase = "http://127.0.0.1:8080"
 
 type commonFlags struct {
+	model       *string
 	operationID *string
 	apiBase     *string
 	out         *string
@@ -64,6 +65,7 @@ func runPrompt(args []string) int {
 // Folded into run* they were untestable, and losing a line there is invisible:
 // dropping OutputPath makes --out do nothing, and the CLI still prints a path
 // and still writes a PNG, just never the one that was asked for.
+
 func parsePrompt(args []string) (apiBase string, req client.Request, ok bool) {
 	fs, flags := newCommandFlags("prompt")
 	terminated := promptFlagsTerminated(args, fs)
@@ -82,6 +84,7 @@ func parsePrompt(args []string) (apiBase string, req client.Request, ok bool) {
 
 	return *flags.apiBase, client.Request{
 		OperationID: *flags.operationID,
+		Model:       *flags.model,
 		Mode:        client.ModePrompt,
 		Prompt:      prompt,
 		OutputPath:  outputPath(flags),
@@ -145,6 +148,7 @@ func newCommandFlags(name string) (*flag.FlagSet, commonFlags) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	flags := commonFlags{
+		model:       fs.String("model", "haiku", "reasoning model: haiku (default) or opus"),
 		operationID: fs.String("operation-id", "", "reuse the same logical generation after an interrupted submission"),
 		apiBase:     fs.String("api", envDefault("SPRITESMITH_API_BASE", defaultAPIBase), "spritesmith API base URL"),
 		out:         fs.String("out", "", "output filename"),

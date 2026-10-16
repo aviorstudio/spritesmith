@@ -42,6 +42,7 @@ const (
 const DefaultOutputPath = "spritesmith.png"
 
 type Request struct {
+	Model       string
 	Kind        string
 	Format      string
 	OperationID string
@@ -66,6 +67,17 @@ type Client struct {
 }
 
 func (c Client) Process(req Request) (Response, error) {
+	model := req.Model
+	switch model {
+	case "", "haiku":
+		model = "anthropic/claude-haiku-5.5"
+	case "opus":
+		model = "anthropic/claude-opus-5.5"
+	case "anthropic/claude-haiku-5.5", "anthropic/claude-opus-5.5":
+	default:
+		return Response{}, errors.New("model must be haiku or opus")
+	}
+
 	if req.Kind == "" {
 		req.Kind = "vector"
 	}
@@ -120,6 +132,10 @@ func (c Client) Process(req Request) (Response, error) {
 		return Response{}, err
 	}
 	if err := writer.WriteField("subject", "character"); err != nil {
+		return Response{}, err
+	}
+
+	if err := writer.WriteField("agent_model", model); err != nil {
 		return Response{}, err
 	}
 

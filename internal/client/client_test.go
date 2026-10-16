@@ -934,3 +934,20 @@ func TestTheDefaultOutputNameIsTheOneEverythingElseExpects(t *testing.T) {
 		t.Errorf("cli/.gitignore does not list %q, so `make cli` leaves a result in the source tree:\n%s", DefaultOutputPath, ignore)
 	}
 }
+
+func TestReasoningModelChoiceReachesAPI(t *testing.T) {
+	for _, tc := range []struct{ selected, want string }{{"", "anthropic/claude-haiku-5.5"}, {"haiku", "anthropic/claude-haiku-5.5"}, {"opus", "anthropic/claude-opus-5.5"}} {
+		api := &recordingAPI{}
+		srv := httptest.NewServer(api)
+		req := promptRequest(t)
+		req.Model = tc.selected
+		if _, err := (Client{BaseURL: srv.URL}).Process(req); err != nil {
+			srv.Close()
+			t.Fatal(err)
+		}
+		srv.Close()
+		if got := api.form.Get("agent_model"); got != tc.want {
+			t.Fatalf("selection %q sent %q, want %q", tc.selected, got, tc.want)
+		}
+	}
+}
