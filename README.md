@@ -1,8 +1,8 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 0c32d3c3dbc3ab841954f406e5bbfe2da8c15c34297f0fc840c60e00962a26c9 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: ec38d7acca3059eb364acc3b51a941e4df868b2f56436478d173874ad74cd4f9 -->
 
-# Spritesmith
+# spritesmith
 
-Command-line client for the Spritesmith API. Create animated vector sprites and download finished PNG or SVG files.
+Command-line client for the spritesmith API. Create animated vector sprites and download finished PNG or SVG files.
 
 The client requires an API service and an account token. It does not contain a local renderer or generation engine.
 
@@ -40,7 +40,7 @@ The default API is `http://127.0.0.1:8080`; configure your hosted service explic
 
 ## Development
 
-Install the [Komizo release](https://github.com/nicodes/komizo#install) matching `komizo.lock`.
+Install the [komizo release](https://github.com/nicodes/komizo#install) matching `komizo.lock`.
 
 ```sh
 komizo check        # Complete project checks
