@@ -5,14 +5,13 @@
   "required_checks": [
     "Test"
   ],
-  "integration_job": "check",
+  "integration_job": "ci",
   "dispatch_workflow": "ci.yml",
   "max_group_size": 10,
   "managed_dependencies": [
-    "nicodes/tools/*",
-    "nicodes/cicd/*",
+    "aviorstudio/gdam-actions/*",
     "nicodes/komizo-actions/*",
-    "aviorstudio/gdam-actions/*"
+    "nicodes/komizo/*"
   ],
   "sensitive_dependencies": [
     "*clerk*",

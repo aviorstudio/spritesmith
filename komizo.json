@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "recipe": "go-cli",
+  "repository": "aviorstudio/spritesmith",
+  "tools": {
+    "actionlint": "1.7.12",
+    "shellcheck": "0.11.0"
+  },
+  "artifacts": [
+    "dist"
+  ],
+  "stages": {
+    "lint": [
+      [
+        "bash",
+        "scripts/lint.sh"
+      ],
+      [
+        "actionlint"
+      ]
+    ],
+    "unit": [
+      [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/token",
+        "./cmd/spritesmith"
+      ]
+    ],
+    "integration": [
+      [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/client"
+      ]
+    ],
+    "build": [
+      [
+        "bash",
+        "scripts/build.sh"
+      ]
+    ],
+    "artifact-check": [
+      [
+        "python3",
+        "scripts/check-artifacts.py"
+      ]
+    ],
+    "dev": {
+      "inapplicable": "Interactive CLI usage requires a caller-owned terminal and configuration"
+    },
+    "stop": {
+      "inapplicable": "The CLI owns no background development service"
+    },
+    "clean": [
+      [
+        "python3",
+        "-c",
+        "import shutil; [shutil.rmtree(p,ignore_errors=True) for p in ['dist', '.artifacts']]"
+      ]
+    ]
+  },
+  "build_environment": [
+    "VERSION",
+    "COMMIT"
+  ],
+  "build_environment_defaults": {
+    "VERSION": "dev"
+  },
+  "revision_environment": [
+    "COMMIT"
+  ],
+  "validation": {
+    "workflow": {
+      "required": [
+        "ci.yml",
+        "dependency-policy.yml"
+      ],
+      "ci_gates": [
+        "Test"
+      ]
+    }
+  }
+}
