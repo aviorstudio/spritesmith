@@ -1,3 +1,5 @@
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 0c32d3c3dbc3ab841954f406e5bbfe2da8c15c34297f0fc840c60e00962a26c9 -->
+
 # Spritesmith
 
 Command-line client for the Spritesmith API. Create animated vector sprites and download finished PNG or SVG files.
@@ -38,9 +40,10 @@ The default API is `http://127.0.0.1:8080`; configure your hosted service explic
 
 ## Development
 
-```sh
-make install
-make check
-```
+Install the [Komizo release](https://github.com/nicodes/komizo#install) matching `komizo.lock`.
 
-Checks include Go race tests, HTTP client integration tests, five platform archives, checksums, source identity verification, and vulnerability scanning. The client builds independently of private repositories.
+```sh
+komizo check        # Complete project checks
+komizo run build    # Build the declared distributable artifacts
+komizo describe     # Inspect tools and focused stages
+```
