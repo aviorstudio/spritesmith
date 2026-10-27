@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: ec38d7acca3059eb364acc3b51a941e4df868b2f56436478d173874ad74cd4f9 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: ba46d6ed5eb52d766e45733ec7480d618099cf0af61a3bb59904a5c4473386f8 -->
 
 # spritesmith
 
@@ -8,10 +8,10 @@ The client requires an API service and an account token. It does not contain a l
 
 ## Install
 
-With Go 1.27.2 or later:
+With Go 1.27.2 or later, install to `~/.local/bin` (add it to your PATH if necessary):
 
 ```sh
-go install github.com/aviorstudio/spritesmith/cmd/spritesmith@latest
+curl -fsSL https://spritesmith.ai/install | sh
 ```
 
 ## Configure
