@@ -14,7 +14,14 @@ for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; d
   CGO_ENABLED=0 GOOS="$target_os" GOARCH="$target_arch" go build -trimpath \
     -ldflags "-X main.version=$VERSION -X main.revision=$revision" -o "$staging/$binary" ./cmd/spritesmith
   cp README.md "$staging/README.md"
-  archive="spritesmith_${target_os}_${target_arch}"
+  case "$target_os" in
+    linux) os_label=Linux ;;
+    darwin) os_label=Darwin ;;
+    windows) os_label=Windows ;;
+  esac
+  arch_label="$target_arch"
+  [[ "$target_arch" != amd64 ]] || arch_label=x86_64
+  archive="spritesmith_${os_label}_${arch_label}"
   if [[ "$target_os" == windows ]]; then
     python3 - "$staging" "dist/$archive.zip" <<'PY'
 from pathlib import Path
