@@ -10,8 +10,8 @@ import zipfile
 
 root = Path('dist')
 expected = {f'spritesmith_{os}_{arch}.{suffix}' for os, arch, suffix in (
-    ('linux', 'amd64', 'tar.gz'), ('linux', 'arm64', 'tar.gz'),
-    ('darwin', 'amd64', 'tar.gz'), ('darwin', 'arm64', 'tar.gz'), ('windows', 'amd64', 'zip'))}
+    ('Linux', 'x86_64', 'tar.gz'), ('Linux', 'arm64', 'tar.gz'),
+    ('Darwin', 'x86_64', 'tar.gz'), ('Darwin', 'arm64', 'tar.gz'), ('Windows', 'x86_64', 'zip'))}
 checksums = {}
 for line in (root/'checksums.txt').read_text().splitlines():
     digest, name = line.split()
@@ -35,7 +35,7 @@ revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).stri
 release = json.loads((root/'release.json').read_text())
 if release['revision'] != revision: raise SystemExit('artifacts belong to another source revision')
 with tempfile.TemporaryDirectory() as temp:
-    with tarfile.open(root/'spritesmith_linux_amd64.tar.gz') as archive:
+    with tarfile.open(root/'spritesmith_Linux_x86_64.tar.gz') as archive:
         archive.extractall(temp, filter='data')
     output = subprocess.check_output([str(Path(temp)/'spritesmith'), '--version'], text=True)
     if revision not in output: raise SystemExit('binary revision differs')
