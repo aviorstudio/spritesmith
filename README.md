@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 4ab6296c3bc52c098a9eb78120110d5b4a33e6e8ab1e7c0f0e997964020c2763 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: bfc0c6fa41c5f40cbbfb48ea1a67f9455f2dfa44350ee8310ef89ff8286dc19f -->
 
 # spritesmith
 
@@ -8,11 +8,21 @@ The client requires an API service and an account token. It does not contain a l
 
 ## Install
 
-Install a prebuilt Linux or macOS binary (x86_64 or arm64) into `~/.local/bin` (add it to your PATH if necessary). A Go compiler is not required:
+Linux and macOS (x86_64 or arm64), using prebuilt binaries:
+
+With curl:
 
 ```sh
 curl -fsSL https://spritesmith.ai/install | sh
 ```
+
+Or with mise:
+
+```sh
+mise use --global github:aviorstudio/spritesmith@latest
+```
+
+The shell installer installs to `~/.local/bin`; add that directory to your PATH if necessary. Mise manages its own installation directory and PATH through its shell activation.
 
 ## Configure
 
@@ -37,12 +47,6 @@ The service creates and reviews vector animations through its agent workflow. Th
 Generation runs as a server job. The client waits for completion and downloads the requested file. Retain `--operation-id` and reuse it with the same input after an interruption. Existing output files are never overwritten. An uncertain job requires reconciliation; the client does not automatically submit another paid request.
 
 The default API is `http://127.0.0.1:8080`; configure your hosted service explicitly. Default output is `spritesmith.png`, or `spritesmith.svg` for SVG downloads.
-
-Source builds remain available for development with a compatible Go toolchain:
-
-```sh
-go install github.com/aviorstudio/spritesmith/cmd/spritesmith@latest
-```
 
 ## Development
 
