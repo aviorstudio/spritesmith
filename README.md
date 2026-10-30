@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: a248353e1c3f8475d1a5b8bf30d88f1a7208b8f80e696a9f1ebc26123bac84d8 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: a14d8684430adbafe393c54fe437b1580bacdf8baf6b178f62d0e7a8d52d57d2 -->
 
 # spritesmith
 
@@ -47,3 +47,16 @@ The service creates and reviews vector animations through its agent workflow. Th
 Generation runs as a server job. The client waits for completion and downloads the requested file. Retain `--operation-id` and reuse it with the same input after an interruption. Existing output files are never overwritten. An uncertain job requires reconciliation; the client does not automatically submit another paid request.
 
 The default API is `http://127.0.0.1:8080`; configure your hosted service explicitly. Default output is `spritesmith.png`, or `spritesmith.svg` for SVG downloads.
+
+## Contributor verification
+
+Tool versions and native tasks live in `mise.toml`. Prepare the pinned helper source and run the complete gate:
+
+```sh
+git clone https://github.com/nicodes/tools.git .ci-tools
+git -C .ci-tools checkout --detach 091101094fedf5ce2e67c339c1c9c842d6a662dc
+mise install
+mise run check
+```
+
+Native build and test commands retain source and output checks, with receipts in `.artifacts/verification`. Existing product release rules and artifacts remain owned by this repository. End users install the product’s published distribution.
