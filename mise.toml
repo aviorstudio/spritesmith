@@ -1,0 +1,66 @@
+[tools]
+"python" = "3.13.11"
+"go" = "1.27.3"
+"go:golang.org/x/vuln/cmd/govulncheck" = "1.7.0"
+"actionlint" = "1.7.12"
+"shellcheck" = "0.11.0"
+
+[env]
+TOOLS_ROOT = "{{ get_env(name='TOOLS_ROOT', default=config_root ~ '/.ci-tools') }}"
+GOTOOLCHAIN = "local"
+PYTHONDONTWRITEBYTECODE = "1"
+"VERSION" = "{{ get_env(name='VERSION', default='dev') }}"
+
+[tasks."install"]
+run = ["go mod download"]
+
+[tasks."lint"]
+run = ["bash scripts/lint.sh", "actionlint"]
+
+[tasks."unit"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" test --name unit --artifact dist --environment VERSION --environment COMMIT --revision-environment COMMIT -- mise run _unit"
+depends = ["install"]
+
+[tasks."build"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" build --name build --artifact dist --environment VERSION --environment COMMIT --revision-environment COMMIT -- mise run _build"
+depends = ["install"]
+
+[tasks."artifact-check"]
+run = ["python3 scripts/check-artifacts.py"]
+depends = ["build"]
+
+[tasks."vuln"]
+run = ["govulncheck ./..."]
+
+[tasks."clean"]
+run = ["python3 -c 'import shutil; [shutil.rmtree(p,ignore_errors=True) for p in ['\"'\"'dist'\"'\"', '\"'\"'.artifacts'\"'\"']]'"]
+
+[tasks."integration"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" test --name integration --artifact dist --environment VERSION --environment COMMIT --revision-environment COMMIT -- mise run _integration"
+depends = ["install"]
+
+[tasks."_build"]
+run = ["bash scripts/build.sh"]
+hide = true
+
+[tasks."_unit"]
+run = ["go test -race -count=1 ./internal/token ./cmd/spritesmith"]
+hide = true
+
+[tasks."_integration"]
+run = ["go test -race -count=1 ./internal/client"]
+hide = true
+
+[tasks."_test-stages"]
+run = [{"task" = "unit"}, {"task" = "integration"}]
+hide = true
+
+[tasks."test"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit --test integration -- mise run _test-stages"
+
+[tasks."_check-stages"]
+run = [{"task" = "install"}, {"task" = "lint"}, {"task" = "unit"}, {"task" = "integration"}, {"task" = "build"}, {"task" = "artifact-check"}, {"task" = "vuln"}]
+hide = true
+
+[tasks."check"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit --test integration -- mise run _check-stages"
