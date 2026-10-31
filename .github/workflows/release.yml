@@ -103,7 +103,7 @@ jobs:
   publish:
     name: Publish verified archives
     needs: [identity, accept]
-    uses: nicodes/tools/.github/workflows/cli-publish.yml@091101094fedf5ce2e67c339c1c9c842d6a662dc
+    uses: nicodes/tools/.github/workflows/cli-publish.yml@589def59661a722c91f17acbc6c7ef9b41d06189
     permissions:
       contents: write
     with:
