@@ -76,7 +76,7 @@ updates:
       - github.com/jackc/pgx/*
       - github.com/go-sql-driver/mysql
       - go.mongodb.org/mongo-driver/*
-- package-ecosystem: gomod
+- package-ecosystem: cargo
   directories:
   - /
   schedule:

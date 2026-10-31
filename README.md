@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: a14d8684430adbafe393c54fe437b1580bacdf8baf6b178f62d0e7a8d52d57d2 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 25e5dcd05c5286f92e1f5d8fb8eaa30b9c9e818f7b9ec4eb0ebfc37efea1b9e1 -->
 
 # spritesmith
 
@@ -60,3 +60,5 @@ mise run check
 ```
 
 Native build and test commands retain source and output checks, with receipts in `.artifacts/verification`. Existing product release rules and artifacts remain owned by this repository. End users install the product’s published distribution.
+
+The client is implemented in Rust. To build it from source with the pinned Rust 1.94.0 toolchain, run `cargo build --release --locked`; the executable is `target/release/spritesmith` (`spritesmith.exe` on Windows). Local checks validate the native archive. GitHub Actions tests and packages all five published platforms before accepting a release.
