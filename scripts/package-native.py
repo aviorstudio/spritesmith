@@ -1,6 +1,7 @@
 """Package only the executable built and exercised on this native runner."""
 import json
 import os
+from native_linkage import verify_linkage
 from pathlib import Path
 import platform
 import subprocess
@@ -32,7 +33,5 @@ else:
         archive.add('README.md',arcname='README.md')
 (directory/(name+'.json')).write_text(json.dumps(dict(revision=revision,version=version,platform=system,arch=arch))+'\n')
 
-if system == 'Linux' and (rust_target or version != 'dev'):
-    assert rust_target.endswith('-linux-musl')
-    assert 'INTERP' not in subprocess.check_output(['readelf','-l',str(target)],text=True)
-    assert '(NEEDED)' not in subprocess.check_output(['readelf','-d',str(target)],text=True)
+if rust_target or version != 'dev':
+    verify_linkage(target, system)

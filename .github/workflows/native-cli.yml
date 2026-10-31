@@ -43,6 +43,9 @@ jobs:
         persist-credentials: false
     - name: Install pinned Rust
       run: rustup toolchain install 1.94.0 --profile minimal --target "$RUST_TARGET"
+    - name: Link Windows C runtime statically
+      if: runner.os == 'Windows'
+      run: echo 'RUSTFLAGS=-C target-feature=+crt-static' >> "$GITHUB_ENV"
     - name: Install native musl linker
       if: runner.os == 'Linux'
       run: |
