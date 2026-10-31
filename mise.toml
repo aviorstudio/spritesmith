@@ -1,18 +1,17 @@
 [tools]
 "python" = "3.13.11"
-"go" = "1.27.3"
-"go:golang.org/x/vuln/cmd/govulncheck" = "1.7.0"
+"rust" = "1.94.0"
+"cargo:cargo-audit" = "0.22.2"
 "actionlint" = "1.7.12"
 "shellcheck" = "0.11.0"
 
 [env]
 TOOLS_ROOT = "{{ get_env(name='TOOLS_ROOT', default=config_root ~ '/.ci-tools') }}"
-GOTOOLCHAIN = "local"
 PYTHONDONTWRITEBYTECODE = "1"
 "VERSION" = "{{ get_env(name='VERSION', default='dev') }}"
 
 [tasks."install"]
-run = ["go mod download"]
+run = ["rustup component add --toolchain 1.94.0 rustfmt clippy", "cargo fetch --locked"]
 
 [tasks."lint"]
 run = ["bash scripts/lint.sh", "actionlint"]
@@ -30,7 +29,7 @@ run = ["python3 scripts/check-artifacts.py"]
 depends = ["build"]
 
 [tasks."vuln"]
-run = ["govulncheck ./..."]
+run = ["cargo audit --file Cargo.lock --db .artifacts/advisory-db"]
 
 [tasks."clean"]
 run = ["python3 -c 'import shutil; [shutil.rmtree(p,ignore_errors=True) for p in ['\"'\"'dist'\"'\"', '\"'\"'.artifacts'\"'\"']]'"]
@@ -44,11 +43,11 @@ run = ["bash scripts/build.sh"]
 hide = true
 
 [tasks."_unit"]
-run = ["go test -race -count=1 ./internal/token ./cmd/spritesmith"]
+run = ["cargo test --locked", "python3 tests/installer_test.py"]
 hide = true
 
 [tasks."_integration"]
-run = ["go test -race -count=1 ./internal/client"]
+run = ["cargo build --locked", "python3 tests/client_test.py"]
 hide = true
 
 [tasks."_test-stages"]

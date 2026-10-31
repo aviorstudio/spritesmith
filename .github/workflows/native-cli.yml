@@ -1,0 +1,50 @@
+name: Native CLI
+'on':
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: dev
+permissions:
+  contents: read
+jobs:
+  native:
+    name: CLI ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2025]
+    defaults:
+      run:
+        shell: bash
+    env:
+      VERSION: ${{ inputs.version }}
+      COMMIT: ${{ github.sha }}
+      CARGO_INCREMENTAL: '0'
+    steps:
+    - name: Check out source
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - name: Install pinned Rust
+      run: rustup toolchain install 1.94.0 --profile minimal
+    - name: Test CLI contracts
+      run: |
+        set -euo pipefail
+        cargo +1.94.0 test --locked
+        cargo +1.94.0 build --locked
+        python3 tests/client_test.py
+    - name: Build and verify native archive
+      run: |
+        set -euo pipefail
+        cargo +1.94.0 build --release --locked
+        python3 scripts/package-native.py
+    - name: Upload native archive and source identity
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: native-cli-${{ matrix.runner }}
+        path: dist/*
+        if-no-files-found: error
+        retention-days: 7

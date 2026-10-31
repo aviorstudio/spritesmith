@@ -1,0 +1,31 @@
+"""Package only the executable built and exercised on this native runner."""
+import json
+import os
+from pathlib import Path
+import platform
+import subprocess
+import tarfile
+import zipfile
+
+system = platform.system()
+machine = platform.machine().lower()
+arch = {'amd64':'x86_64','x86_64':'x86_64','aarch64':'arm64','arm64':'arm64'}[machine]
+assert system in ('Linux','Darwin','Windows')
+assert (system,arch) != ('Windows','arm64'), 'This product publishes five targets'
+binary = 'spritesmith.exe' if system=='Windows' else 'spritesmith'
+target = Path(os.environ.get('CARGO_TARGET_DIR','target'))/'release'/binary
+revision = os.environ['COMMIT']
+version = os.environ.get('VERSION','dev')
+assert subprocess.check_output([str(target), '--version'],text=True).strip() == f'spritesmith {version} ({revision})'
+directory = Path(os.environ.get('NATIVE_PACKAGE_OUTPUT','dist'))
+directory.mkdir(exist_ok=True,parents=True)
+name = f'spritesmith_{system}_{arch}'
+if system=='Windows':
+    with zipfile.ZipFile(directory/(name+'.zip'),'w',zipfile.ZIP_DEFLATED) as archive:
+        archive.write(target,binary)
+        archive.write('README.md','README.md')
+else:
+    with tarfile.open(directory/(name+'.tar.gz'),'w:gz') as archive:
+        archive.add(target,arcname=binary)
+        archive.add('README.md',arcname='README.md')
+(directory/(name+'.json')).write_text(json.dumps(dict(revision=revision,version=version,platform=system,arch=arch))+'\n')

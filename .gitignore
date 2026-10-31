@@ -11,3 +11,5 @@ spritesmith.png
 
 /release-assets/
 /.ci-tools/
+
+/target/
