@@ -1,6 +1,7 @@
 """Package only the executable built and exercised on this native runner."""
 import json
 import os
+from native_linkage import verify_linkage
 from pathlib import Path
 import platform
 import subprocess
@@ -13,7 +14,9 @@ arch = {'amd64':'x86_64','x86_64':'x86_64','aarch64':'arm64','arm64':'arm64'}[ma
 assert system in ('Linux','Darwin','Windows')
 assert (system,arch) != ('Windows','arm64'), 'This product publishes five targets'
 binary = 'spritesmith.exe' if system=='Windows' else 'spritesmith'
-target = Path(os.environ.get('CARGO_TARGET_DIR','target'))/'release'/binary
+target_root = Path(os.environ.get('CARGO_TARGET_DIR','target'))
+rust_target = os.environ.get('RUST_TARGET','')
+target = (target_root/rust_target if rust_target else target_root)/'release'/binary
 revision = os.environ['COMMIT']
 version = os.environ.get('VERSION','dev')
 assert subprocess.check_output([str(target), '--version'],text=True).strip() == f'spritesmith {version} ({revision})'
@@ -29,3 +32,6 @@ else:
         archive.add(target,arcname=binary)
         archive.add('README.md',arcname='README.md')
 (directory/(name+'.json')).write_text(json.dumps(dict(revision=revision,version=version,platform=system,arch=arch))+'\n')
+
+if rust_target or version != 'dev':
+    verify_linkage(target, system)
