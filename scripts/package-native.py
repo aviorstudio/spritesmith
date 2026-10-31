@@ -13,7 +13,9 @@ arch = {'amd64':'x86_64','x86_64':'x86_64','aarch64':'arm64','arm64':'arm64'}[ma
 assert system in ('Linux','Darwin','Windows')
 assert (system,arch) != ('Windows','arm64'), 'This product publishes five targets'
 binary = 'spritesmith.exe' if system=='Windows' else 'spritesmith'
-target = Path(os.environ.get('CARGO_TARGET_DIR','target'))/'release'/binary
+target_root = Path(os.environ.get('CARGO_TARGET_DIR','target'))
+rust_target = os.environ.get('RUST_TARGET','')
+target = (target_root/rust_target if rust_target else target_root)/'release'/binary
 revision = os.environ['COMMIT']
 version = os.environ.get('VERSION','dev')
 assert subprocess.check_output([str(target), '--version'],text=True).strip() == f'spritesmith {version} ({revision})'
@@ -29,3 +31,8 @@ else:
         archive.add(target,arcname=binary)
         archive.add('README.md',arcname='README.md')
 (directory/(name+'.json')).write_text(json.dumps(dict(revision=revision,version=version,platform=system,arch=arch))+'\n')
+
+if system == 'Linux' and (rust_target or version != 'dev'):
+    assert rust_target.endswith('-linux-musl')
+    assert 'INTERP' not in subprocess.check_output(['readelf','-l',str(target)],text=True)
+    assert '(NEEDED)' not in subprocess.check_output(['readelf','-d',str(target)],text=True)

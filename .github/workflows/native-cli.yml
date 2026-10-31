@@ -15,7 +15,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2025]
+        include:
+        - runner: ubuntu-24.04
+          rust-target: x86_64-unknown-linux-musl
+        - runner: ubuntu-24.04-arm
+          rust-target: aarch64-unknown-linux-musl
+        - runner: macos-15
+          rust-target: aarch64-apple-darwin
+        - runner: macos-15-intel
+          rust-target: x86_64-apple-darwin
+        - runner: windows-2025
+          rust-target: x86_64-pc-windows-msvc
     defaults:
       run:
         shell: bash
@@ -23,23 +33,34 @@ jobs:
       VERSION: ${{ inputs.version }}
       COMMIT: ${{ github.sha }}
       CARGO_INCREMENTAL: '0'
+      RUST_TARGET: ${{ matrix.rust-target }}
+      CC_x86_64_unknown_linux_musl: musl-gcc
+      CC_aarch64_unknown_linux_musl: musl-gcc
     steps:
     - name: Check out source
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         persist-credentials: false
     - name: Install pinned Rust
-      run: rustup toolchain install 1.94.0 --profile minimal
+      run: rustup toolchain install 1.94.0 --profile minimal --target "$RUST_TARGET"
+    - name: Install native musl linker
+      if: runner.os == 'Linux'
+      run: |
+        set -euo pipefail
+        sudo apt-get update -qq
+        sudo apt-get install -y musl-tools
     - name: Test CLI contracts
       run: |
         set -euo pipefail
-        cargo +1.94.0 test --locked
-        cargo +1.94.0 build --locked
-        python3 tests/client_test.py
+        cargo +1.94.0 test --locked --target "$RUST_TARGET"
+        cargo +1.94.0 build --locked --target "$RUST_TARGET"
+        binary="target/$RUST_TARGET/debug/spritesmith"
+        [ "$RUNNER_OS" != Windows ] || binary+=.exe
+        SPRITESMITH_TEST_BINARY="$binary" python3 tests/client_test.py
     - name: Build and verify native archive
       run: |
         set -euo pipefail
-        cargo +1.94.0 build --release --locked
+        cargo +1.94.0 build --release --locked --target "$RUST_TARGET"
         python3 scripts/package-native.py
     - name: Upload native archive and source identity
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
