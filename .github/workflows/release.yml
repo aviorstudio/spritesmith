@@ -76,7 +76,7 @@ jobs:
         merge-multiple: true
         path: .artifacts/native-cli
     - name: Set up development tools
-      uses: nicodes/tools/setup@091101094fedf5ce2e67c339c1c9c842d6a662dc
+      uses: nicodes/tools/setup@589def59661a722c91f17acbc6c7ef9b41d06189
       env:
         GH_TOKEN: ${{ github.token }}
       timeout-minutes: 5
