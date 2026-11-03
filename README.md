@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 25e5dcd05c5286f92e1f5d8fb8eaa30b9c9e818f7b9ec4eb0ebfc37efea1b9e1 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: fdc0a03bc9002222edf92db7eed99ad2d3c4f5fe62721885ba4392d60b8e7d3b -->
 
 # spritesmith
 
@@ -62,3 +62,13 @@ mise run check
 Native build and test commands retain source and output checks, with receipts in `.artifacts/verification`. Existing product release rules and artifacts remain owned by this repository. End users install the product’s published distribution.
 
 The client is implemented in Rust. To build it from source with the pinned Rust 1.94.0 toolchain, run `cargo build --release --locked`; the executable is `target/release/spritesmith` (`spritesmith.exe` on Windows). Local checks validate the native archive. GitHub Actions tests and packages all five published platforms before accepting a release.
+
+## Contributor task interface
+
+Contributor tool versions and task entry points live in the native Mise configuration. Use `mise run lint` for source checks, `mise run test` for the applicable behavioral tests, and `mise run check` for the complete supported gate. `mise run clean` removes declared generated outputs while preserving source, credentials and retained data. This package has no separate Mise development service; use its native entry points directly.
+
+## Machine results and configuration
+
+Use `spritesmith --json prompt [flags] PROMPT` or `spritesmith prompt --json [flags] PROMPT` for one JSON result. Successful results identify the saved image path, format and actual operation ID. Retain that ID for safe retries. Version and help also accept the leading `--json` flag. Diagnostics use stderr; invalid syntax exits 2 and a failed operation exits 1.
+
+`SPRITESMITH_CONFIG_DIR` overrides the OS configuration directory and contains the `token` file. Without it, the platform's existing application configuration path is used. `SPRITESMITH_API_TOKEN` takes precedence over the file. No token appears in command arguments or machine results.
