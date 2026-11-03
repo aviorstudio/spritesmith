@@ -12,6 +12,7 @@ permissions: {}
 concurrency: release-${{ github.repository }}
 jobs:
   identity:
+    timeout-minutes: 5
     name: Select immutable release identity
     permissions:
       contents: read
@@ -29,7 +30,7 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    - name: Check out release helpers
+    - name: "Check out source"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         repository: nicodes/tools
@@ -42,6 +43,7 @@ jobs:
         BUMP: ${{ inputs.bump }}
       run: python3 _cli_tools/scripts/cli_release.py version --bump "$BUMP" --prefix v
   native-cli:
+    name: "Build native CLI"
     needs: identity
     uses: ./.github/workflows/native-cli.yml
     permissions:
@@ -69,7 +71,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         persist-credentials: false
-    - name: Download native CLI archives
+    - name: "Download artifacts"
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
       with:
         pattern: native-cli-*
@@ -82,14 +84,14 @@ jobs:
       timeout-minutes: 5
     - name: Check project
       run: mise run check
-    - name: Attest accepted release archives
+    - name: "Attest build provenance"
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
       with:
         subject-path: |
           dist/*.tar.gz
           dist/*.zip
           dist/checksums.txt
-    - name: Upload accepted archives
+    - name: "Upload artifacts"
       id: accepted
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
@@ -101,7 +103,7 @@ jobs:
         if-no-files-found: error
         retention-days: 7
   publish:
-    name: Publish verified archives
+    name: "Publish release"
     needs: [identity, accept]
     uses: nicodes/tools/.github/workflows/cli-publish.yml@a1c0321f3b4917a7e99eca42e241e46670f6e1e1
     permissions:
