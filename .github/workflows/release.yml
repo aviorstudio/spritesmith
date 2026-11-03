@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         repository: nicodes/tools
-        ref: 091101094fedf5ce2e67c339c1c9c842d6a662dc
+        ref: a1c0321f3b4917a7e99eca42e241e46670f6e1e1
         path: _cli_tools
         persist-credentials: false
     - name: Determine release version
@@ -76,7 +76,7 @@ jobs:
         merge-multiple: true
         path: .artifacts/native-cli
     - name: Set up development tools
-      uses: nicodes/tools/setup@f412061a7a3f0914db9e09d1159e69504aee8706
+      uses: nicodes/tools/setup@a1c0321f3b4917a7e99eca42e241e46670f6e1e1
       env:
         GH_TOKEN: ${{ github.token }}
       timeout-minutes: 5
@@ -103,7 +103,7 @@ jobs:
   publish:
     name: Publish verified archives
     needs: [identity, accept]
-    uses: nicodes/tools/.github/workflows/cli-publish.yml@f412061a7a3f0914db9e09d1159e69504aee8706
+    uses: nicodes/tools/.github/workflows/cli-publish.yml@a1c0321f3b4917a7e99eca42e241e46670f6e1e1
     permissions:
       contents: write
     with:

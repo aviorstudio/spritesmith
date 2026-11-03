@@ -54,7 +54,7 @@ class Client(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.env = dict(os.environ, SPRITESMITH_API_TOKEN='', SPRITESMITH_API_BASE='http://127.0.0.1:1',
-                        HOME=str(self.root), XDG_CONFIG_HOME=str(self.root/'config'), APPDATA=str(self.root/'config'))
+                        SPRITESMITH_CONFIG_DIR='', HOME=str(self.root), XDG_CONFIG_HOME=str(self.root/'config'), APPDATA=str(self.root/'config'))
     def run_cli(self, *args, **env):
         return subprocess.run([str(BINARY), *args], cwd=self.root, env=self.env|env,
                               capture_output=True, text=True, timeout=10)
@@ -77,6 +77,39 @@ class Client(unittest.TestCase):
                 message=BytesParser().parsebytes(f"Content-Type: {headers['Content-Type']}\r\n\r\n".encode()+body)
                 fields={part.get_param('name',header='content-disposition'):part.get_payload(decode=True).decode() for part in message.walk() if part.get_param('name',header='content-disposition')}
                 self.assertEqual(fields,dict(kind='vector',workflow='agent',subject='character',agent_model=expected,prompt='a duck'))
+
+    def test_json_has_one_result_and_retains_the_actual_operation_identity(self):
+        with api(lambda h,_:reply(h)) as (url,calls):
+            result=self.prompt(url,'--json','--out','machine.png')
+            self.assertEqual(result.returncode,0,result.stderr)
+            value=json.loads(result.stdout)
+            self.assertEqual(value['result']['path'],'machine.png')
+            self.assertEqual(value['result']['operation_id'],calls[0][2]['Idempotency-Key'])
+            self.assertEqual((self.root/'machine.png').read_bytes(),b'synthetic-image')
+            self.assertNotIn('\x1b',result.stdout)
+    def test_json_failure_is_not_replayed_or_written_as_an_image(self):
+        body=json.dumps({'error':{'code':'operation_conflict','message':'Retain the saved operation','request_id':'fixture-id'}}).encode()
+        with api(lambda h,_:reply(h,409,body,'application/json')) as (url,calls):
+            result=self.prompt(url,'--json')
+            self.assertEqual(result.returncode,1)
+            self.assertFalse(json.loads(result.stdout)['ok'])
+            self.assertIn('Retain the saved operation',json.loads(result.stdout)['error']['message'])
+            self.assertEqual(len(calls),1)
+            self.assertFalse((self.root/'spritesmith.png').exists())
+        self.assertTrue(json.loads(self.run_cli('--json','version').stdout)['ok'])
+        invalid=self.run_cli('prompt','--json','--unknown')
+        self.assertEqual(invalid.returncode,2)
+        self.assertEqual(json.loads(invalid.stdout)['error']['code'],'invalid_usage')
+    def test_explicit_config_directory_and_environment_token_precedence(self):
+        config=self.root/'explicit-config';config.mkdir()
+        (config/'token').write_text('file-fixture-token')
+        with api(lambda h,_:reply(h)) as (url,calls):
+            result=self.prompt(url,'--out','file.png',SPRITESMITH_CONFIG_DIR=str(config))
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(calls[0][2]['Authorization'],'Bearer file-fixture-token')
+            result=self.prompt(url,'--out','environment.png',SPRITESMITH_CONFIG_DIR=str(config),SPRITESMITH_API_TOKEN='env-fixture-token')
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(calls[1][2]['Authorization'],'Bearer env-fixture-token')
 
     def test_no_token_has_no_authorization_header(self):
         with api(lambda h,_:reply(h)) as (url,calls):

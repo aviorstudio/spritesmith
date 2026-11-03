@@ -19,6 +19,9 @@ pub fn path() -> Option<PathBuf> {
             .filter(|v| !v.is_empty())
             .map(PathBuf::from)
     };
+    if let Some(directory) = env("SPRITESMITH_CONFIG_DIR") {
+        return Some(directory.join("token"));
+    }
     let root = if cfg!(target_os = "windows") {
         env("APPDATA")
     } else if cfg!(target_os = "macos") {

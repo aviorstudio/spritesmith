@@ -296,9 +296,14 @@ pub fn process(request: &Request, credential: &Credential) -> Result<()> {
         response.take(65537).read_to_string(&mut data)?;
         let message = serde_json::from_str::<Value>(&data)
             .ok()
-            .and_then(|v| v["error"].as_str().map(str::to_owned))
+            .and_then(|v| {
+                v["error"]["message"]
+                    .as_str()
+                    .or_else(|| v["error"].as_str())
+                    .map(str::to_owned)
+            })
             .filter(|s| !s.is_empty())
-            .unwrap_or_else(|| data.trim().to_owned());
+            .unwrap_or_default();
         return Err(if message.is_empty() {
             format!("API returned {status}")
         } else {
