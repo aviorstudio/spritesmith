@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: fdc0a03bc9002222edf92db7eed99ad2d3c4f5fe62721885ba4392d60b8e7d3b -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 351fbeeca84e32cc89926e1d721e4519548ba2e35479f29d8bc935ee9c84518c -->
 
 # spritesmith
 
@@ -50,22 +50,20 @@ The default API is `http://127.0.0.1:8080`; configure your hosted service explic
 
 ## Contributor verification
 
-Tool versions and native tasks live in `mise.toml`. Prepare the pinned helper source and run the complete gate:
+`mise.toml` pins contributor SDKs. The generated root Makefile selects an immutable revision of the shared cookbook and binds it to `cookbook.toml`.
 
 ```sh
-git clone https://github.com/nicodes/tools.git .ci-tools
-git -C .ci-tools checkout --detach 091101094fedf5ce2e67c339c1c9c842d6a662dc
-mise install
-mise run check
+make help
+make setup
+make build
+make test
 ```
 
-Native build and test commands retain source and output checks, with receipts in `.artifacts/verification`. Existing product release rules and artifacts remain owned by this repository. End users install the product’s published distribution.
+`make help` works offline before setup. `make setup` explicitly prepares the pinned SDKs, locked dependencies and declared fixtures. `make build` compiles the executable, packages the native archive and verifies its source and output identity. `make test` runs lint, deterministic native unit tests, security checks and the declared integration journeys against those verified artifacts. Run build again after changing source; tests do not install tools or build missing shipping artifacts.
 
-The client is implemented in Rust. To build it from source with the pinned Rust 1.94.0 toolchain, run `cargo build --release --locked`; the executable is `target/release/spritesmith` (`spritesmith.exe` on Windows). Local checks validate the native archive. GitHub Actions tests and packages all five published platforms before accepting a release.
+Use `make fmt` to apply formatting, `make test:lint`, `make test:unit`, `make test:security` or `make test:integration` to select a group, and `make clean` to remove the declared generated outputs. Build and test evidence is recorded in `.artifacts/verification`.
 
-## Contributor task interface
-
-Contributor tool versions and task entry points live in the native Mise configuration. Use `mise run lint` for source checks, `mise run test` for the applicable behavioral tests, and `mise run check` for the complete supported gate. `mise run clean` removes declared generated outputs while preserving source, credentials and retained data. This package has no separate Mise development service; use its native entry points directly.
+The verified executable is `.artifacts/build/spritesmith` (`spritesmith.exe` on Windows). CI retains all five published targets: Linux and macOS on x86_64 and arm64, and Windows x86_64. Published Linux binaries use musl, and Windows binaries include the C runtime. Release archives retain their existing contents, checksums and source-workflow build provenance. Integration journeys exercise the real client against disposable fixtures and verify the installer. They do not submit paid generation requests.
 
 ## Machine results and configuration
 

@@ -1,0 +1,100 @@
+version = 1
+recipe = "rust-cli"
+
+[[components.rust]]
+name = "cli"
+manifest = "Cargo.toml"
+binaries = ["spritesmith"]
+profile = "release"
+
+[package]
+binary = "spritesmith"
+component = "cli"
+output = ".artifacts/build/spritesmith"
+profile = "release"
+files = ["README.md"]
+version_arguments = ["--version"]
+version_template = "{binary} {version} ({commit})"
+release_metadata = true
+
+[[package.native_targets]]
+timeout_minutes = 25
+runner = "ubuntu-24.04"
+target = "x86_64-unknown-linux-musl"
+platform = "Linux"
+arch = "x86_64"
+extension = "tar.gz"
+checks = ["tests/client_test.py"]
+
+[[package.native_targets]]
+timeout_minutes = 25
+runner = "ubuntu-24.04-arm"
+target = "aarch64-unknown-linux-musl"
+platform = "Linux"
+arch = "arm64"
+extension = "tar.gz"
+checks = ["tests/client_test.py"]
+
+[[package.native_targets]]
+timeout_minutes = 25
+runner = "macos-15"
+target = "aarch64-apple-darwin"
+platform = "Darwin"
+arch = "arm64"
+extension = "tar.gz"
+checks = ["tests/client_test.py"]
+
+[[package.native_targets]]
+timeout_minutes = 25
+runner = "macos-15-intel"
+target = "x86_64-apple-darwin"
+platform = "Darwin"
+arch = "x86_64"
+extension = "tar.gz"
+checks = ["tests/client_test.py"]
+
+[[package.native_targets]]
+timeout_minutes = 25
+runner = "windows-2025"
+target = "x86_64-pc-windows-msvc"
+platform = "Windows"
+arch = "x86_64"
+extension = "zip"
+checks = ["tests/client_test.py"]
+
+[artifacts]
+paths = ["dist", ".artifacts/build", ".artifacts/native-package"]
+environment = ["VERSION", "COMMIT", "DATE", "RUST_TARGET"]
+revision_environment = ["COMMIT"]
+
+[artifacts.binary_environment]
+SPRITESMITH_TEST_BINARY = ".artifacts/build/spritesmith"
+
+[lint]
+shell_paths = ["install.sh"]
+
+[[tests.lint]]
+runner = "python"
+path = "tests/public_boundary_test.py"
+
+[[tests.integration]]
+runner = "python"
+path = "tests/client_test.py"
+
+[[tests.integration]]
+runner = "python"
+path = "tests/installer_test.py"
+
+[clean]
+paths = ["dist", "target", ".artifacts/build", ".artifacts/rust-target", ".artifacts/native-package", ".artifacts/advisory-db", ".artifacts/fixtures"]
+
+[ci]
+runner = "ubuntu-24.04"
+timeout_minutes = 30
+
+[publication]
+tag_prefix = "v"
+initial = "first"
+version_identity = "tag"
+validation_timeout = 30
+acceptance_timeout = 30
