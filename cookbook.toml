@@ -91,3 +91,10 @@ paths = ["dist", "target", ".artifacts/build", ".artifacts/rust-target", ".artif
 [ci]
 runner = "ubuntu-24.04"
 timeout_minutes = 30
+
+[publication]
+tag_prefix = "v"
+initial = "first"
+version_identity = "tag"
+validation_timeout = 30
+acceptance_timeout = 30
