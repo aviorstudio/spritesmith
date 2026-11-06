@@ -64,8 +64,6 @@ checks = ["tests/client_test.py"]
 
 [artifacts]
 paths = ["dist", ".artifacts/build", ".artifacts/native-package"]
-environment = ["VERSION", "COMMIT", "DATE", "RUST_TARGET"]
-revision_environment = ["COMMIT"]
 
 [artifacts.binary_environment]
 SPRITESMITH_TEST_BINARY = ".artifacts/build/spritesmith"
@@ -88,9 +86,6 @@ path = "tests/installer_test.py"
 [clean]
 paths = ["dist", "target", ".artifacts/build", ".artifacts/rust-target", ".artifacts/native-package", ".artifacts/advisory-db", ".artifacts/fixtures"]
 
-[ci]
-runner = "ubuntu-24.04"
-timeout_minutes = 30
 
 [publication]
 tag_prefix = "v"
