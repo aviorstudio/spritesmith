@@ -9,9 +9,6 @@ profile = "release"
 
 [package]
 binary = "spritesmith"
-component = "cli"
-output = ".artifacts/build/spritesmith"
-profile = "release"
 files = ["README.md"]
 version_arguments = ["--version"]
 version_template = "{binary} {version} ({commit})"
@@ -61,12 +58,6 @@ platform = "Windows"
 arch = "x86_64"
 extension = "zip"
 checks = ["tests/client_test.py"]
-
-[artifacts]
-paths = ["dist", ".artifacts/build", ".artifacts/native-package"]
-
-[artifacts.binary_environment]
-SPRITESMITH_TEST_BINARY = ".artifacts/build/spritesmith"
 
 [lint]
 shell_paths = ["install.sh"]
