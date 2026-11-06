@@ -12,7 +12,7 @@ import tempfile
 import threading
 import unittest
 
-BINARY = Path(os.environ.get('SPRITESMITH_TEST_BINARY', 'target/debug/spritesmith'+('.exe' if os.name == 'nt' else ''))).resolve()
+BINARY = Path(os.environ.get('COOKBOOK_CLI_BINARY', 'target/debug/spritesmith'+('.exe' if os.name == 'nt' else ''))).resolve()
 
 
 @contextmanager
