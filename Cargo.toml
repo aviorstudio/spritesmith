@@ -8,7 +8,7 @@ rust-version = "1.94"
 reqwest = { version = "=0.13.5", default-features = false, features = ["blocking", "rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "ring"] }
 serde_json = "=1.0.154"
-uuid = { version = "=1.29.0", features = ["v4"] }
+uuid = { version = "=1.29.3", features = ["v4"] }
 
 [profile.release]
 lto = "thin"
