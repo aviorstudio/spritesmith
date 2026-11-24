@@ -84,3 +84,6 @@ initial = "first"
 version_identity = "tag"
 validation_timeout = 30
 acceptance_timeout = 30
+
+[ci]
+single_job = true
